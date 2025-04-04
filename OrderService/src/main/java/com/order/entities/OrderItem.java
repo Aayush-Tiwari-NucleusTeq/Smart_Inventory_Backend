@@ -1,5 +1,7 @@
 package com.order.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -37,6 +39,9 @@ public class OrderItem {
 	private int quantity;
 	
 	@ManyToOne
+	@JsonBackReference
 	@JoinColumn(name = "orderId")
 	private Order order;
+	
+	transient private Inventory inventory;
 }
