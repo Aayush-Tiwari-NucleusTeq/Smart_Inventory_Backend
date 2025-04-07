@@ -12,13 +12,13 @@ public class InventorySubscription {
 
 	 @Autowired
 	 private PubSubTemplate pubSubTemplate;
-
-	 @PostConstruct
-	 public void subscribe() {
-	        pubSubTemplate.subscribe("order-subscription", message -> {
-	            String data = message.getPubsubMessage().getData().toStringUtf8();
-	            System.out.println("Received order: " + data);
-	            message.ack();
-	        });
-	 }
+//
+//	 @PostConstruct
+//	 public void subscribe() {
+//	        pubSubTemplate.subscribe("order-subscription", message -> {
+//	            String data = message.getPubsubMessage().getData().toStringUtf8();
+//	            System.out.println("Received order: in inventory service" + data);
+//	            message.ack();
+//	        });
+//	 }
 }

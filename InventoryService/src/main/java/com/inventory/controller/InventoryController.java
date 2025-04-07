@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.google.cloud.spring.pubsub.core.PubSubTemplate;
 import com.inventory.in.dto.InventoryInDto;
 import com.inventory.out.dto.InventoryOutDto;
 import com.inventory.services.InventoryService;
@@ -25,6 +27,9 @@ public class InventoryController {
 	
 	@Autowired
 	private InventoryService inventoryService;
+	
+	@Autowired
+	private PubSubTemplate pubSubTemplate;
 
 	@PostMapping
 	public ResponseEntity<InventoryOutDto> saveInventory(@Valid @RequestBody InventoryInDto inventoryInDto){
@@ -33,7 +38,9 @@ public class InventoryController {
 	
 	@PutMapping
 	public ResponseEntity<InventoryOutDto> updateInventory(@RequestParam String productID, @RequestParam int stock){
-		return ResponseEntity.ok(this.inventoryService.updateInventory(productID, stock));
+		InventoryOutDto updateInventory = this.inventoryService.updateInventory(productID, stock);
+		this.pubSubTemplate.publish("order-topic", updateInventory.toString());
+		return ResponseEntity.ok(updateInventory);
 	}
 	
 	@GetMapping("/{productID}")
@@ -50,4 +57,10 @@ public class InventoryController {
 	public ResponseEntity<String> deleteInventory(@PathVariable("productID") String productID){
 		return ResponseEntity.ok(this.inventoryService.deleteInventory(productID));
 	}
+	
+	@PostMapping("/placeorder")
+    public ResponseEntity<String> placeOrder(@RequestBody String message) {
+        pubSubTemplate.publish("order-topic", message);
+        return ResponseEntity.ok("Inventory updated!");
+    }
 }
