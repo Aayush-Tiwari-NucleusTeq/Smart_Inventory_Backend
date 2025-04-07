@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.cloud.spring.pubsub.core.PubSubTemplate;
 import com.order.entities.Order;
 import com.order.entities.OrderItem;
 import com.order.services.OrderItemService;
@@ -31,6 +32,9 @@ public class OrderController {
 	
 	@Autowired
 	private OrderItemService orderItemService;
+	
+	@Autowired
+	private PubSubTemplate pubSubTemplate;
 	
 	@PostMapping
 	public ResponseEntity<Order> saveOrder(@RequestBody Order order){
@@ -78,4 +82,10 @@ public class OrderController {
 		return ResponseEntity.ok(orders);
 		
 	}
+	
+	@PostMapping("/placeorder")
+    public ResponseEntity<String> placeOrder(@RequestBody Order order) {
+        pubSubTemplate.publish("order-topic", order.toString());
+        return ResponseEntity.ok("Order placed!");
+    }
 }
