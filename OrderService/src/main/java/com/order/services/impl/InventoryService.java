@@ -16,8 +16,8 @@ public class InventoryService {
 	
 	public String businessLogic(String productId, int stock) {
 		System.out.println("Under Inventory service" + productId);
-//		List<Order> orders = this.orderService.getOrdersByProductId(productId);
-//		System.out.println(orders);
+		List<Order> orders = this.orderService.getOrdersByProductId(productId);
+		System.out.println(orders);
 		try {
 			Thread.sleep(5000);
 		} catch (InterruptedException e) {

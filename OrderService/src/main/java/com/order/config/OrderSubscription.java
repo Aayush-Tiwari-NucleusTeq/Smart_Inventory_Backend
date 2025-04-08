@@ -30,15 +30,6 @@ public class OrderSubscription {
 	private PubSubTemplate pubSubTemplate;
 	
 	@Autowired
-	private ObjectMapper objectMapper;
-	
-	@Autowired
-	private OrderService orderService;
-	
-	@Autowired
-	private OrderController orderController;
-	
-	@Autowired
 	private InventoryService inventoryService;
 
 	@EventListener(ApplicationReadyEvent.class)
