@@ -4,17 +4,21 @@ import java.lang.module.ResolutionException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import com.order.entities.Inventory;
 import com.order.entities.Order;
 import com.order.entities.OrderItem;
 import com.order.repository.OrderRepository;
 import com.order.services.InventoryClient;
+import com.order.services.OrderItemService;
 import com.order.services.OrderService;
 
 @Service
@@ -22,6 +26,9 @@ public class OrderServiceImpl implements OrderService {
 	
 	@Autowired
 	private OrderRepository orderRepository;
+	
+	@Autowired
+	private OrderItemService orderItemService;
 	
 	@Autowired
 	private InventoryClient inventoryClient;
@@ -86,6 +93,22 @@ public class OrderServiceImpl implements OrderService {
 	@Override
 	public List<Order> getOrderbyUserId(String userId) {
 		return this.orderRepository.findByUserId(userId);
+	}
+	
+	public List<Order> getOrdersByProductId(String productId){
+		List<OrderItem> orderItems = this.orderItemService.getOrderItemsByProductId(productId);
+//		orderItems.stream().map(orderId )
+		Set<String> orderIds = orderItems.stream()
+                .map(orderItem -> orderItem.getOrder().getOrderId()) // Extract orderId
+                .collect(Collectors.toSet());
+		List<Order> orders = new ArrayList<>();
+		System.out.println(orderIds);
+		for(String orderId : orderIds) {
+			Order order = this.getOrderbyOrderId(orderId);
+			orders.add(order);
+		}
+		return orders;
+		
 	}
 
 	@Override
