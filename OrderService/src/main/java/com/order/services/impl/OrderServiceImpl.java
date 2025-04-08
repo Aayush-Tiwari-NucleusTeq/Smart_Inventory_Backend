@@ -1,6 +1,7 @@
 package com.order.services.impl;
 
 import java.lang.module.ResolutionException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,10 +30,31 @@ public class OrderServiceImpl implements OrderService {
 	public Order saveOrder(Order order) {
 		String orderId = "Order_" + UUID.randomUUID().toString().substring(0, 10);
 		order.setOrderId(orderId);
+		List<OrderItem> orderItems = order.getOrderItems();
+		List<String> productIds = new ArrayList<>();
+		List<String> status = new ArrayList<>();
+		for(OrderItem orderit: orderItems) {
+			productIds.add(orderit.getProductId());
+			Inventory inventory = this.inventoryClient.getInventories(orderit.getProductId());
+			if(orderit.getQuantity() <= inventory.getStock()) {
+				status.add("Serviceable");
+			} else {
+				status.add("Non-serviceable");
+			}
+		}
+		System.out.println(status);
+		
 		for(OrderItem orderItem: order.getOrderItems()) {
 			orderItem.setOrder(order);
 		}
+		if(status.contains("Non-serviceable")) {
+			order.setStatus("Non-serviceable");
+		} else {
+			order.setStatus("Serviceable");
+		}
+//		System.out.println(order);
 		return this.orderRepository.save(order);
+//		return null;
 	}
 
 	@Override

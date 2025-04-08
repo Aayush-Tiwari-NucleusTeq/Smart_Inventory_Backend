@@ -11,10 +11,15 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 @Builder
 public class InventoryOutDto {
 
 	private String productId;
 	private int stock;
+	@Override
+	public String toString() {
+		return "{" + "\"productId\":\"" + productId + "\"," + "\"stock\":" + stock + "}";
+	}
+	
+	
 }
