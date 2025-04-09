@@ -102,7 +102,6 @@ public class OrderServiceImpl implements OrderService {
                 .map(orderItem -> orderItem.getOrder().getOrderId()) // Extract orderId
                 .collect(Collectors.toSet());
 		List<Order> orders = new ArrayList<>();
-		System.out.println(orderIds);
 		for(String orderId : orderIds) {
 			Order order = this.getOrderbyOrderId(orderId);
 			orders.add(order);

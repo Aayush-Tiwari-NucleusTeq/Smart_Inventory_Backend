@@ -17,12 +17,15 @@ public class InventoryService {
 	public String businessLogic(String productId, int stock) {
 		System.out.println("Under Inventory service" + productId);
 		List<Order> orders = this.orderService.getOrdersByProductId(productId);
-		System.out.println(orders);
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		for(Order order : orders) {
+			System.out.println(order.getOrderId());
+			System.out.println(order.getStatus());
+			System.out.println(order.getStatus());
+			System.out.println(order.getOrderItems().get(0).getQuantity());
+			if(stock >= order.getOrderItems().get(0).getQuantity()) {
+				order.setStatus("Serviceable");
+			}
+			this.orderService.updateOrder(order.getOrderId(), "Serviceable");
 		}
 		return "Business implementation";
 	}
