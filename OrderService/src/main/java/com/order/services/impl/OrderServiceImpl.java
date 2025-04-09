@@ -44,6 +44,7 @@ public class OrderServiceImpl implements OrderService {
 			productIds.add(orderit.getProductId());
 			Inventory inventory = this.inventoryClient.getInventories(orderit.getProductId());
 			if(orderit.getQuantity() <= inventory.getStock()) {
+				this.inventoryClient.updateInventory(inventory.getProductId(), inventory.getStock()-orderit.getQuantity());
 				status.add("Serviceable");
 			} else {
 				status.add("Non-serviceable");
@@ -81,12 +82,6 @@ public class OrderServiceImpl implements OrderService {
 		for(OrderItem orderitem : orderItems) {
 			System.out.println(orderitem.getInventory().getStock() +" "+ orderitem.getInventory().getProductId());
 		}
-//		System.out.println(orderItems);
-//		List<OrderItem> newOrderItems = orderItems.stream().map(orderItem -> {
-//			orderItem.setInventory(inventoryClient.getInventories(orderItem.getProductId()));
-//			return orderItem;
-//		}).collect(Collectors.toList());
-//		System.out.println(newOrderItems);
 		return this.orderRepository.findById(orderId).orElseThrow(()-> new ResolutionException("Order with orderID - [" + "] is not  present in the Database!! Please check the id..."));
 	}
 
@@ -97,9 +92,9 @@ public class OrderServiceImpl implements OrderService {
 	
 	public List<Order> getOrdersByProductId(String productId){
 		List<OrderItem> orderItems = this.orderItemService.getOrderItemsByProductId(productId);
-//		orderItems.stream().map(orderId )
+//		orderItems.stream().map(orderId)
 		Set<String> orderIds = orderItems.stream()
-                .map(orderItem -> orderItem.getOrder().getOrderId()) // Extract orderId
+                .map(orderItem -> orderItem.getOrder().getOrderId()) 
                 .collect(Collectors.toSet());
 		List<Order> orders = new ArrayList<>();
 		for(String orderId : orderIds) {
@@ -107,7 +102,6 @@ public class OrderServiceImpl implements OrderService {
 			orders.add(order);
 		}
 		return orders;
-		
 	}
 
 	@Override
@@ -127,6 +121,13 @@ public class OrderServiceImpl implements OrderService {
 		} else {
 			return "Something went wrong";
 		}
+	}
+
+	@Override
+	public String updateInventoryAfterAvailability(String productId, int stock) {
+		this.inventoryClient.updateInventory(productId, stock);
+		System.out.println("===============================================================" + productId +" "+ stock);
+		return "Updated inventory";
 	}
 
 }

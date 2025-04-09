@@ -13,4 +13,5 @@ public interface OrderService {
 	Order updateOrder(String orderId, String status);
 	String deleteOrder(String orderId);
 	List<Order> getOrdersByProductId(String productId);
+	String updateInventoryAfterAvailability(String productId, int stock);
 }

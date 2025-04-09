@@ -43,6 +43,13 @@ public class InventoryController {
 		return ResponseEntity.ok(updateInventory);
 	}
 	
+	@PutMapping("/{productID}/{stock}")
+	public ResponseEntity<InventoryOutDto> updateInventoryFromOrderService(@PathVariable("productID") String productID,@PathVariable("stock") int stock){
+		System.out.println("---------------------------------------------Under controller --------------------------------------------------------------" + productID+ " " + stock);
+		InventoryOutDto updateInventory = this.inventoryService.updateInventory(productID, stock);
+		return ResponseEntity.ok(updateInventory);
+	}
+	
 	@GetMapping("/{productID}")
 	public ResponseEntity<InventoryOutDto> getInventory(@PathVariable("productID") String productID){
 		return ResponseEntity.ok(this.inventoryService.getInventory(productID));

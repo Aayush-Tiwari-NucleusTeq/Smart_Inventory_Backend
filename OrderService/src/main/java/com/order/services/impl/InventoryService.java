@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.order.entities.Order;
+import com.order.services.InventoryClient;
 import com.order.services.OrderService;
 
 @Service
@@ -18,14 +19,14 @@ public class InventoryService {
 		System.out.println("Under Inventory service" + productId);
 		List<Order> orders = this.orderService.getOrdersByProductId(productId);
 		for(Order order : orders) {
-			System.out.println(order.getOrderId());
-			System.out.println(order.getStatus());
-			System.out.println(order.getStatus());
-			System.out.println(order.getOrderItems().get(0).getQuantity());
 			if(stock >= order.getOrderItems().get(0).getQuantity()) {
+				System.out.println("The stock left is " + (stock-order.getOrderItems().get(0).getQuantity()));
+				String result = this.orderService.updateInventoryAfterAvailability(productId, stock-order.getOrderItems().get(0).getQuantity());
+				System.out.println(result);
 				order.setStatus("Serviceable");
+				this.orderService.updateOrder(order.getOrderId(), "Serviceable");
 			}
-			this.orderService.updateOrder(order.getOrderId(), "Serviceable");
+			
 		}
 		return "Business implementation";
 	}
