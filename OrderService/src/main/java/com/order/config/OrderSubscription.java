@@ -39,12 +39,9 @@ public class OrderSubscription {
 				Thread.sleep(5000);
 				pubSubTemplate.subscribe("order-subscription", message -> {
 			           String data = message.getPubsubMessage().getData().toStringUtf8();
-			           System.out.println("Inventory updated - " + data);
 			           String productId = data.substring(14, 34);
 			           int stock = Integer.parseInt(data.substring(44, data.length()-1));
-			           System.out.println(productId +" "+ stock);
 			           this.inventoryService.businessLogic(productId, stock);
-			           System.out.println("Business logic completed");
 			           message.ack();
 			       });
 			}

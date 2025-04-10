@@ -126,7 +126,6 @@ public class OrderServiceImpl implements OrderService {
 	@Override
 	public String updateInventoryAfterAvailability(String productId, int stock) {
 		this.inventoryClient.updateInventory(productId, stock);
-		System.out.println("===============================================================" + productId +" "+ stock);
 		return "Updated inventory";
 	}
 
