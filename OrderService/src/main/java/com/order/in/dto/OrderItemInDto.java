@@ -16,5 +16,6 @@ import lombok.ToString;
 @Builder
 public class OrderItemInDto {
 	private String productId;
+	private String userId;
 	private int quantity;
 }
