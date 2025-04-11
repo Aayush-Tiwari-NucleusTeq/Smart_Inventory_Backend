@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.order.entities.Inventory;
 import com.order.entities.Order;
 import com.order.entities.OrderItem;
+import com.order.exception.ResourceNotFoundException;
 import com.order.in.dto.OrderInDto;
 import com.order.in.dto.OrderItemInDto;
 import com.order.out.dto.OrderItemOutDto;
@@ -76,18 +77,13 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public OrderOutDto getOrderbyOrderId(String orderId) {
-		Order order = this.orderRepository.findById(orderId).orElseThrow(()-> new ResolutionException("Order with orderID - [" + "] is not  present in the Database!! Please check the id..."));
+		Order order = this.orderRepository.findById(orderId).orElseThrow(()-> new ResourceNotFoundException("Order with orderID - [" + orderId + "] is not  present in the Database!! Please check the id..."));
 		List<OrderItem> orderItems = order.getOrderItems();
 		for(OrderItem orderitem : orderItems) {
 			Inventory inventory = this.inventoryClient.getInventories(orderitem.getProductId());
 			orderitem.setInventory(inventory);
 		}
-//		System.out.println(orderItems);
-		for(OrderItem orderitem : orderItems) {
-			System.out.println(orderitem.getInventory().getStock() +" "+ orderitem.getInventory().getProductId());
-		}
-		Order fetchedOrder = this.orderRepository.findById(orderId).orElseThrow(()-> new ResolutionException("Order with orderID - [" + "] is not  present in the Database!! Please check the id..."));
-		OrderOutDto orderOutDto = this.orderToOrderOutDto(fetchedOrder);
+		OrderOutDto orderOutDto = this.orderToOrderOutDto(order);
 		return orderOutDto;
 	}
 
@@ -118,9 +114,8 @@ public class OrderServiceImpl implements OrderService {
 	@Override
 	public List<OrderOutDto> getOrderbyProductId(String productId) {
 		List<OrderItem> orderItems = this.orderItemService.getOrderItemsByProductId(productId);
-//		orderItems.stream().map(orderId )
 		Set<String> orderIds = orderItems.stream()
-                .map(orderItem -> orderItem.getOrder().getOrderId()) // Extract orderId
+                .map(orderItem -> orderItem.getOrder().getOrderId())
                 .collect(Collectors.toSet());
 		List<Order> orders = new ArrayList<>();
 		System.out.println(orderIds);
@@ -211,11 +206,8 @@ public class OrderServiceImpl implements OrderService {
 	        item.setOrderItemId(itemDto.getOrderItemId());
 	        item.setProductId(itemDto.getProductId());
 	        item.setQuantity(itemDto.getQuantity());
-	        item.setInventory(itemDto.getInventory()); // transient field
-
-	        // Very important: Set the back-reference
+	        item.setInventory(itemDto.getInventory());
 	        item.setOrder(order);
-
 	        orderItems.add(item);
 	    }
 
