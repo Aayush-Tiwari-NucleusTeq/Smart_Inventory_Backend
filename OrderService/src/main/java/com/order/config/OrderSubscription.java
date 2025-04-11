@@ -32,11 +32,11 @@ public class OrderSubscription {
 	@Autowired
 	private InventoryService inventoryService;
 
-	@EventListener(ApplicationReadyEvent.class)
+	@PostConstruct
 	public void subscribe() {
 		Executors.newSingleThreadExecutor().submit(()->{
 			try {
-				Thread.sleep(5000);
+//				Thread.sleep(5000);
 				pubSubTemplate.subscribe("order-subscription", message -> {
 			           String data = message.getPubsubMessage().getData().toStringUtf8();
 			           String productId = data.substring(14, 34);
@@ -46,7 +46,7 @@ public class OrderSubscription {
 			       });
 			}
 			catch(Exception ex) {
-				System.err.println("Error initializing subscriber : " + ex.getMessage());
+				System.err.println("Error in subscriber : " + ex.getMessage());
 			}
 		});
 	       

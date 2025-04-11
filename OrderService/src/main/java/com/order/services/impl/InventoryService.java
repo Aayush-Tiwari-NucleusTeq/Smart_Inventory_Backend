@@ -20,7 +20,8 @@ public class InventoryService {
 		List<OrderOutDto> orderOutDtos = this.orderService.getOrdersByProductId(productId);
 		List<Order> orders = orderOutDtos.stream().map(orderOutDto -> this.orderService.orderOutDtoToOrder(orderOutDto)).collect(Collectors.toList());
 		for(Order order : orders) {
-			if(stock >= order.getOrderItems().get(0).getQuantity()) {
+			if(stock >= order.getOrderItems().get(0).getQuantity() && order.getStatus()!="Serviceable") {
+				System.out.println("Under the for loop");
 				String result = this.orderService.updateInventoryAfterAvailability(productId, stock-order.getOrderItems().get(0).getQuantity());
 				order.setStatus("Serviceable");
 				this.orderService.updateOrder(order.getOrderId(), "Serviceable");
