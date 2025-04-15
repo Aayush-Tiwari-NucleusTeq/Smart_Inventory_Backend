@@ -23,6 +23,9 @@ import com.order.services.InventoryClient;
 import com.order.services.OrderItemService;
 import com.order.services.OrderService;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class OrderServiceImpl implements OrderService {
 	
@@ -37,6 +40,7 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public OrderOutDto saveOrder(OrderInDto orderInDto) {
+		log.info("Saving order for user: {}", orderInDto.getUserId());
 		Order order = this.orderInDtoToOrder(orderInDto);
 		String orderId = "Order_" + UUID.randomUUID().toString().substring(0, 10);
 		order.setOrderId(orderId);
@@ -53,7 +57,6 @@ public class OrderServiceImpl implements OrderService {
 				status.add("Non-serviceable");
 			}
 		}
-		System.out.println(status);
 		
 		for(OrderItem orderItem: order.getOrderItems()) {
 			orderItem.setOrder(order);
@@ -65,11 +68,13 @@ public class OrderServiceImpl implements OrderService {
 		}
 		Order savedOrder = this.orderRepository.save(order);
 		OrderOutDto orderOutDto = this.orderToOrderOutDto(savedOrder);
+		log.info("Order saved with ID: {}, Status: {}", savedOrder.getOrderId(), savedOrder.getStatus());
 		return orderOutDto;
 	}
 
 	@Override
 	public List<OrderOutDto> getAllOrders() {
+		log.info("Fetching all orders");
 		List<Order> orders = this.orderRepository.findAll();
 		List<OrderOutDto> orderOutDtos = orders.stream().map(order -> this.orderToOrderOutDto(order)).collect(Collectors.toList());
 		return orderOutDtos;
@@ -77,6 +82,7 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public OrderOutDto getOrderbyOrderId(String orderId) {
+		log.info("Fetching order by Order ID -> {}", orderId);
 		Order order = this.orderRepository.findById(orderId).orElseThrow(()-> new ResourceNotFoundException("Order with orderID - [" + orderId + "] is not  present in the Database!! Please check the id..."));
 		List<OrderItem> orderItems = order.getOrderItems();
 		for(OrderItem orderitem : orderItems) {
@@ -89,12 +95,14 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public List<OrderOutDto> getOrderbyUserId(String userId) {
+		log.info("Fetching orders by User ID -> {}", userId);
 		List<Order> orders = this.orderRepository.findByUserId(userId);
 		List<OrderOutDto> orderOutDtos = orders.stream().map(order -> this.orderToOrderOutDto(order)).collect(Collectors.toList());
 		return orderOutDtos;
 	}
 	
 	public List<OrderOutDto> getOrdersByProductId(String productId){
+		log.info("Fetching orders by Product ID -> {}", productId);
 		List<OrderItem> orderItems = this.orderItemService.getOrderItemsByProductId(productId);
 //		orderItems.stream().map(orderId)
 		Set<String> orderIds = orderItems.stream()
@@ -113,6 +121,7 @@ public class OrderServiceImpl implements OrderService {
 	
 	@Override
 	public List<OrderOutDto> getOrderbyProductId(String productId) {
+		log.info("Fetching orders by Product ID -> {}", productId);
 		List<OrderItem> orderItems = this.orderItemService.getOrderItemsByProductId(productId);
 		Set<String> orderIds = orderItems.stream()
                 .map(orderItem -> orderItem.getOrder().getOrderId())
@@ -131,6 +140,7 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public OrderOutDto updateOrder(String orderId, String status) {
+		log.info("Updating Order ID -> {} with Status -> {}", orderId, status);
 		Order order = this.orderRepository.findById(orderId).orElseThrow(()-> new ResolutionException("Order with orderID - [" + "] is not  present in the Database!! Please check the id..."));
 		order.setStatus(status);
 		this.orderRepository.save(order);
@@ -140,6 +150,7 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public String deleteOrder(String orderId) {
+		log.info("Deleting order with Order ID -> {}", orderId);
 		Order order = this.orderRepository.findById(orderId).orElseThrow(()-> new ResolutionException("Order with orderID - [" + "] is not  present in the Database!! Please check the id..."));
 		if(order != null) {
 			this.orderRepository.deleteById(orderId);
@@ -151,6 +162,7 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public String updateInventoryAfterAvailability(String productId, int stock) {
+		log.info("Updating inventory after availability for Product ID -> {}, stock -> {}", productId, stock);
 		this.inventoryClient.updateInventory(productId, stock);
 		return "Updated inventory";
 	}
