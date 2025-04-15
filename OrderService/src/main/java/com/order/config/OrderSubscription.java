@@ -42,6 +42,7 @@ public class OrderSubscription {
 			           String productId = data.substring(14, 34);
 			           int stock = Integer.parseInt(data.substring(44, data.length()-1));
 			           this.inventoryService.businessLogic(productId, stock);
+			           System.out.println(data);
 			           message.ack();
 			       });
 			}
