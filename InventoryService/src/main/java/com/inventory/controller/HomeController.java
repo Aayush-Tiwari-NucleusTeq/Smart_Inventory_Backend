@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping("/test")
 public class HomeController {
@@ -16,6 +19,7 @@ public class HomeController {
 	
 	@GetMapping
 	public String home() {
+		log.info("The inventory service is working fine");
 		return "The Inventory Service is working fine";
 	}
 	

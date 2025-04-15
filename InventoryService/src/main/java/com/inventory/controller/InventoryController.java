@@ -20,7 +20,9 @@ import com.inventory.out.dto.InventoryOutDto;
 import com.inventory.services.InventoryService;
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/inventory")
 public class InventoryController {
@@ -33,11 +35,13 @@ public class InventoryController {
 
 	@PostMapping
 	public ResponseEntity<InventoryOutDto> saveInventory(@Valid @RequestBody InventoryInDto inventoryInDto){
+		log.info("Saving new inventory");
 		return ResponseEntity.ok(this.inventoryService.saveInventory(inventoryInDto));
 	}
 	
 	@PutMapping
 	public ResponseEntity<InventoryOutDto> updateInventory(@RequestParam String productID, @RequestParam int stock){
+		log.info("Updating inventory: productID={}, stock={}", productID, stock);
 		InventoryOutDto updateInventory = this.inventoryService.updateInventory(productID, stock);
 		this.pubSubTemplate.publish("order-topic", updateInventory.toString());
 		return ResponseEntity.ok(updateInventory);
@@ -45,28 +49,31 @@ public class InventoryController {
 	
 	@PutMapping("/{productID}/{stock}")
 	public ResponseEntity<InventoryOutDto> updateInventoryFromOrderService(@PathVariable("productID") String productID,@PathVariable("stock") int stock){
-		System.out.println("---------------------------------------------Under controller --------------------------------------------------------------" + productID+ " " + stock);
 		InventoryOutDto updateInventory = this.inventoryService.updateInventory(productID, stock);
 		return ResponseEntity.ok(updateInventory);
 	}
 	
 	@GetMapping("/{productID}")
 	public ResponseEntity<InventoryOutDto> getInventory(@PathVariable("productID") String productID){
+		 log.info("Fetching inventory for productID={}", productID);
 		return ResponseEntity.ok(this.inventoryService.getInventory(productID));
 	}
 	
 	@GetMapping
 	public ResponseEntity<List<InventoryOutDto>> getAllInventories(){
+		log.info("Fetching all inventories");
 		return ResponseEntity.ok(this.inventoryService.getAllInventories());
 	}
 	
 	@DeleteMapping("/{productID}")
 	public ResponseEntity<String> deleteInventory(@PathVariable("productID") String productID){
+		log.info("Deleting inventory for productID={}", productID);
 		return ResponseEntity.ok(this.inventoryService.deleteInventory(productID));
 	}
 	
 	@PostMapping("/placeorder")
     public ResponseEntity<String> placeOrder(@RequestBody String message) {
+		log.info("Placing order with message: {}", message);
         pubSubTemplate.publish("order-topic", message);
         return ResponseEntity.ok("Inventory updated!");
     }

@@ -14,6 +14,9 @@ import com.inventory.out.dto.InventoryOutDto;
 import com.inventory.repository.InventoryRepository;
 import com.inventory.services.InventoryService;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class InventoryServiceImpl implements InventoryService {
 	
@@ -25,22 +28,27 @@ public class InventoryServiceImpl implements InventoryService {
 		Inventory inventory = this.inventoryInDtoToInventory(inventoryInDto);
 		String randomProductId = "PROD_" + UUID.randomUUID().toString().substring(0,15);
 		inventory.setProductId(randomProductId);
+		log.info("Saving inventory for product -> {} with stock -> {}", inventory.getProductId(), inventory.getStock());
 		Inventory savedInventory =  this.inventoryRepository.save(inventory);
+		log.info("Inventory saved with the product ID -> {}", inventory.getProductId());
 		InventoryOutDto inventoryOutDto = this.inventoryToInventoryOutDto(savedInventory);
 		return inventoryOutDto;
 	}
 
 	@Override
 	public InventoryOutDto updateInventory(String productId, int stock) {
+		log.info("Updating inventory for product ID -> {} with stock -> {}", productId, stock);
 		Inventory inventory = this.inventoryRepository.findById(productId).orElseThrow(()->new ResourceNotFoundException("The product with product ID - [" + productId + "] is not present !! Please check the product ID"));
 		inventory.setStock(stock);
 		Inventory updatedInventory = this.inventoryRepository.save(inventory);
+		log.info("Updated inventory for product ID -> {}", productId);
 		InventoryOutDto inventoryOutDto = this.inventoryToInventoryOutDto(updatedInventory);
 		return inventoryOutDto;
 	}
 
 	@Override
 	public List<InventoryOutDto> getAllInventories() {
+		log.info("Fetching all inventories");
 		List<Inventory> inventories = this.inventoryRepository.findAll();
 		List<InventoryOutDto> inventoryOutDtos = inventories.stream().map(inventory -> this.inventoryToInventoryOutDto(inventory)).collect(Collectors.toList());
 		return inventoryOutDtos;
@@ -48,19 +56,24 @@ public class InventoryServiceImpl implements InventoryService {
 
 	@Override
 	public InventoryOutDto getInventory(String product_id) {
+		log.info("Fetching inventory for product ID -> {}", product_id);
 		Inventory inventory = this.inventoryRepository.findById(product_id).orElseThrow(()->new ResourceNotFoundException("The product with product ID - [" + product_id + "] is not present !! Please check the product ID"));
+		log.info("Fetched inventory for product ID -> {}", product_id);
 		InventoryOutDto inventoryOutDto = this.inventoryToInventoryOutDto(inventory);
 		return inventoryOutDto;
 	}
 
 	@Override
 	public String deleteInventory(String product_id) {
+		log.info("Deleting inventory for product ID -> {}", product_id);
 		Inventory inventory = this.inventoryRepository.findById(product_id).orElseThrow(()->new ResourceNotFoundException("The product with product ID - [" + product_id + "] is not present !! Please check the product ID"));
 		if(inventory != null) {
 			this.inventoryRepository.deleteById(product_id);
+			log.info("Deleted inventory for product ID -> {}", product_id);
 			return "Inventory is deleted successfully";
 		} else {
 			System.out.println("Something went wrong");
+			log.info("Some error has occured, please check!!");
 			return "Something went wrong";
 		}
 	}
