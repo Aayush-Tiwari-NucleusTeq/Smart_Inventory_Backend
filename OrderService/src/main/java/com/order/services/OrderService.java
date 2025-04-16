@@ -8,7 +8,7 @@ import com.order.out.dto.OrderOutDto;
 
 public interface OrderService {
 
-	OrderOutDto saveOrder(OrderInDto order);
+	OrderOutDto saveOrder(OrderInDto order) throws Exception;
 	List<OrderOutDto> getAllOrders();
 	OrderOutDto getOrderbyOrderId(String orderId);
 	List<OrderOutDto> getOrderbyUserId(String userId);

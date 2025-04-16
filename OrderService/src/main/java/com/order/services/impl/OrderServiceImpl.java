@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.order.entities.Inventory;
 import com.order.entities.Order;
 import com.order.entities.OrderItem;
+import com.order.exception.ExternalServiceException;
 import com.order.exception.ResourceNotFoundException;
 import com.order.in.dto.OrderInDto;
 import com.order.in.dto.OrderItemInDto;
@@ -39,7 +40,7 @@ public class OrderServiceImpl implements OrderService {
 	private InventoryClient inventoryClient;
 
 	@Override
-	public OrderOutDto saveOrder(OrderInDto orderInDto) {
+	public OrderOutDto saveOrder(OrderInDto orderInDto) throws Exception {
 		log.info("Saving order for user: {}", orderInDto.getUserId());
 		Order order = this.orderInDtoToOrder(orderInDto);
 		String orderId = "Order_" + UUID.randomUUID().toString().substring(0, 10);
@@ -48,14 +49,20 @@ public class OrderServiceImpl implements OrderService {
 		List<String> productIds = new ArrayList<>();
 		List<String> status = new ArrayList<>();
 		for(OrderItem orderit: orderItems) {
-			productIds.add(orderit.getProductId());
-			Inventory inventory = this.inventoryClient.getInventories(orderit.getProductId());
-			if(orderit.getQuantity() <= inventory.getStock()) {
-				this.inventoryClient.updateInventory(inventory.getProductId(), inventory.getStock()-orderit.getQuantity());
-				status.add("Serviceable");
-			} else {
-				status.add("Non-serviceable");
+			try {
+				productIds.add(orderit.getProductId());
+				Inventory inventory = this.inventoryClient.getInventories(orderit.getProductId());
+				if(orderit.getQuantity() <= inventory.getStock()) {
+					this.inventoryClient.updateInventory(inventory.getProductId(), inventory.getStock()-orderit.getQuantity());
+					status.add("Serviceable");
+				} else {
+					status.add("Non-serviceable");
+				}
+			} catch (Exception e) {
+				log.error("Inventory Service is not up or may be network issue occurred");
+				throw new ExternalServiceException("Inventory service is not up or the product ID is not valid, Please check !!");
 			}
+			
 		}
 		
 		for(OrderItem orderItem: order.getOrderItems()) {

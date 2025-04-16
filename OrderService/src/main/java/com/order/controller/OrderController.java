@@ -34,7 +34,7 @@ public class OrderController {
 	private PubSubTemplate pubSubTemplate;
 	
 	@PostMapping
-	public ResponseEntity<OrderOutDto> saveOrder(@RequestBody OrderInDto order){
+	public ResponseEntity<OrderOutDto> saveOrder(@RequestBody OrderInDto order) throws Exception{
 		log.info("Saving new order for user -> {}", order.getUserId());
 		return ResponseEntity.ok(this.orderService.saveOrder(order));
 	}
