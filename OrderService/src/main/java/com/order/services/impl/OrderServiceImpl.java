@@ -59,7 +59,7 @@ public class OrderServiceImpl implements OrderService {
 					status.add("Non-serviceable");
 				}
 			} catch (Exception e) {
-				log.error("Inventory Service is not up or may be network issue occurred");
+				log.error("Inventory Service is not up or the product ID is not valid");
 				throw new ExternalServiceException("Inventory service is not up or the product ID is not valid, Please check !!");
 			}
 			
