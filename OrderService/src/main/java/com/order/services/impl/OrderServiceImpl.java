@@ -24,6 +24,7 @@ import com.order.services.InventoryClient;
 import com.order.services.OrderItemService;
 import com.order.services.OrderService;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -38,8 +39,11 @@ public class OrderServiceImpl implements OrderService {
 	
 	@Autowired
 	private InventoryClient inventoryClient;
+	
+	private static final String ORDER_SERVICE = "orderService";
 
 	@Override
+	@CircuitBreaker(name = ORDER_SERVICE, fallbackMethod = "faultMethod")
 	public OrderOutDto saveOrder(OrderInDto orderInDto) throws Exception {
 		log.info("Saving order for user: {}", orderInDto.getUserId());
 		Order order = this.orderInDtoToOrder(orderInDto);
@@ -49,20 +53,14 @@ public class OrderServiceImpl implements OrderService {
 		List<String> productIds = new ArrayList<>();
 		List<String> status = new ArrayList<>();
 		for(OrderItem orderit: orderItems) {
-			try {
-				productIds.add(orderit.getProductId());
-				Inventory inventory = this.inventoryClient.getInventories(orderit.getProductId());
-				if(orderit.getQuantity() <= inventory.getStock()) {
-					this.inventoryClient.updateInventory(inventory.getProductId(), inventory.getStock()-orderit.getQuantity());
-					status.add("Serviceable");
-				} else {
-					status.add("Non-serviceable");
-				}
-			} catch (Exception e) {
-				log.error("Inventory Service is not up or the product ID is not valid");
-				throw new ExternalServiceException("Inventory service is not up or the product ID is not valid, Please check !!");
+			productIds.add(orderit.getProductId());
+			Inventory inventory = this.inventoryClient.getInventories(orderit.getProductId());
+			if(orderit.getQuantity() <= inventory.getStock()) {
+				this.inventoryClient.updateInventory(inventory.getProductId(), inventory.getStock()-orderit.getQuantity());
+				status.add("Serviceable");
+			} else {
+				status.add("Non-serviceable");
 			}
-			
 		}
 		
 		for(OrderItem orderItem: order.getOrderItems()) {
@@ -77,6 +75,10 @@ public class OrderServiceImpl implements OrderService {
 		OrderOutDto orderOutDto = this.orderToOrderOutDto(savedOrder);
 		log.info("Order saved with ID: {}, Status: {}", savedOrder.getOrderId(), savedOrder.getStatus());
 		return orderOutDto;
+	}
+	
+	public OrderOutDto faultMethod(Exception e) {
+		return new OrderOutDto("ORD-1", "Fault tolerance", "Demonstration", null);
 	}
 
 	@Override
